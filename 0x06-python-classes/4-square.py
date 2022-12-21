@@ -1,40 +1,61 @@
 #!/usr/bin/python3
-"""Square module."""
+"""Square generation module for Python project 0x06
+"""
 
 
 class Square:
-    """Defines a square."""
+    """Class defined for square generation.
+
+    Args:
+        size (int): length of one side of square
+
+    Attributes:
+        __size (int): length of one side of square
+
+    """
 
     def __init__(self, size=0):
-        """Constructor.
-
-        Args:
-            size: length of side of the square.
-        """
-        self.__size = size
+        # attribute assigment here engages setters defined below
+        self.size = size
 
     @property
     def size(self):
-        """Properties for the length of a sise of a square.
+        """__size getter, setter with same method name
 
-        Raises:
-            TypeError: if size is not an integer.
-            ValueError: If size < 0.
+        Returns:
+            __size (int): length of one side, squared
+
         """
         return self.__size
 
     @size.setter
     def size(self, value):
-        if not isinstance(value, int):
-            raise TypeError("size must be an integer")
+        """Args:
+            value (int): length of one side of square
+
+        Attributes:
+            __size (int): length of one side of square
+
+        Raises:
+            TypeError: if value is not an integer
+            ValueError: if value is less than 0
+
+        """
+        if type(value) is not int:
+            raise TypeError('size must be an integer')
         if value < 0:
-            raise ValueError("size must be >= 0")
+            raise ValueError('size must be >= 0')
         self.__size = value
 
     def area(self):
-        """Area of the square.
+        """Calulates area of square.
+
+        Attributes:
+            __size (int): length of one side of square
 
         Returns:
-            thee size squared.
+            area (int): length of one side, squared
+
         """
-        return self.__size ** 2
+        area = self.__size * self.__size
+        return area
