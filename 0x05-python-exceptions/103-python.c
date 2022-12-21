@@ -1,84 +1,122 @@
+/* printf fflush */
 #include <stdio.h>
-#include <stdlib.h>
-#include <Python.h>
-#include <floatobject.h>
+/* strchr */
 #include <string.h>
+/* Python C API */
+#include <Python.h>
 
 
 /**
- * print_python_float - prints inflo about pYthon float.
- * @p: address of PyObject struct.
-*/
-void print_python_float(PyObject *p)
-{
-	double d;
-
-		setbuf(stdout, NULL);
-		printf("[.] float object info\n");
-		if (strcmp(p->ob_type->tp_name, "float"))
-		{
-			printf(" [ERROR] Invalid Float Object\n");
-			return;
-		}
-
-	d = ((PyFloatObject *)p)->ob_fval;
-		printf(" value: %s\n",
-			PyOS_double_to_string(d, 'r', 0, Py_DTSF_ADD_DOT_0, NULL));
-}
-
-
-/**
- * print_python_bytes - prints info about Python bytes.
- * @p: address of PyObject struct.
-*/
+ * print_python_bytes - prints the size, string representation, and hex
+ * representation of a Python bytes object
+ *
+ * Some cpython macros/functions prohibited by project task instructions.
+ *
+ * @p: PyObject *-castable struct pointer
+ */
 void print_python_bytes(PyObject *p)
 {
-	size_t i, len, size;
-	char *str;
+	int i;
+	Py_ssize_t size, printed_bytes;
+	char *array_as_string = NULL;
 
-	setbuf(stdout, NULL);
 	printf("[.] bytes object info\n");
-	if (strcmp(p->ob_type->tp_name, "bytes"))
+
+	if (!PyBytes_Check(p))
 	{
-		printf(" [ERROR] Invalid Bytes Object\n");
+		printf("  [ERROR] Invalid Bytes Object\n");
+		fflush(stdout);
 		return;
 	}
-	size = ((PyVarObject *)p)->ob_size;
-	str = ((PyBytesObject *)p)->ob_sval;
-	len = size + 1 > 10 ? 10 : size + 1;
-	printf(" size: %lu\n", size);
-	printf(" trying string: %s\n", str);
-	printf(" first %lu bytes: ", len);
-	for (i = 0; i < len; i++)
-		printf("%02hhx%s", str[i], i + 1 < len ? " " : "");
-	printf("\n");
+
+	size = ((PyVarObject *)(p))->ob_size;
+	printf("  size: %li\n", size);
+
+	array_as_string = ((PyBytesObject *)(p))->ob_sval;
+	printf("  trying string: %s\n", array_as_string);
+
+	printed_bytes = (size + 1 >= 10) ? 10 : size + 1;
+	printf("  first %li bytes:", printed_bytes);
+	for (i = 0; i < printed_bytes; i++)
+		printf(" %02x", (unsigned char)(array_as_string[i]));
+	putchar('\n');
+	fflush(stdout);
 }
 
 
 /**
- * print_python_list - prints info about Python lists.
- * @p: address of PyObject struct.
-*/
+ * print_python_float - prints value of a Python float object: at least one
+ * place of precision, no trailing zeroes
+ *
+ * Some cpython macros/functions prohibited by project task instructions.
+ *
+ * @p: PyObject *-castable struct pointer
+ */
+void print_python_float(PyObject *p)
+{
+	char float_str[40];
+
+	printf("[.] float object info\n");
+	if (!PyFloat_Check(p))
+	{
+		printf("  [ERROR] Invalid Float Object\n");
+		fflush(stdout);
+		return;
+	}
+
+	/*
+	 * Could not find printf format tag that accommodated both variable
+	 * precision with no trailing zeroes AND .0 for integers
+	 */
+	sprintf(float_str, "%.16g", ((PyFloatObject *)p)->ob_fval);
+	if (strchr(float_str, '.') != NULL)
+		printf("  value: %s\n", float_str);
+	else
+		printf("  value: %.1f\n", ((PyFloatObject *)p)->ob_fval);
+
+	fflush(stdout);
+}
+
+
+/**
+ * print_python_list - prints member count, allocated spaces, and member
+ * element types for python lists
+ *
+ * Some cpython macros/functions prohibited by project task instructions.
+ *
+ * @p: PyObject *-castable struct pointer
+ */
 void print_python_list(PyObject *p)
 {
 	int i;
+	Py_ssize_t size;
+	PyObject *list_member;
 
-	setbuf(stdout, NULL);
-	printf("[*] Python list info\n");
-	if (strcmp(p->ob_type->tp_name, "list"))
+	if (!PyList_Check(p))
 	{
-		printf(" [ERROR] Invalid List Object\n");
+		printf("  [ERROR] Invalid List Object\n");
+		fflush(stdout);
 		return;
 	}
-	printf("[*] Size of the Python List = %lu\n", ((PyVarObject *)p)->ob_size);
+
+	printf("[*] Python list info\n");
+
+	size = ((PyVarObject *)(p))->ob_size;
+	printf("[*] Size of the Python List = %li\n", size);
+
 	printf("[*] Allocated = %lu\n", ((PyListObject *)p)->allocated);
-	for (i = 0; i < ((PyVarObject *)p)->ob_size; i++)
+
+	for (i = 0; i < size; i++)
 	{
+		list_member = ((PyListObject *)p)->ob_item[i];
 		printf("Element %d: %s\n", i,
-			((PyListObject *)p)->ob_item[i]->ob_type->tp_name);
-		if (!strcmp(((PyListObject *)p)->ob_item[i]->ob_type->tp_name, "bytes"))
-			print_python_bytes(((PyListObject *)p)->ob_item[i]);
-		else if (!strcmp(((PyListObject *)p)->ob_item[i]->ob_type->tp_name, "float"))
-			print_python_float(((PyListObject *)p)->ob_item[i]);
+		       list_member->ob_type->tp_name);
+
+		if (PyBytes_Check(list_member))
+			print_python_bytes(list_member);
+		else if (PyFloat_Check(list_member))
+			print_python_float(list_member);
+
 	}
+	fflush(stdout);
 }
