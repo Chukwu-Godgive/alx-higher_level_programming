@@ -1,22 +1,25 @@
 #!/usr/bin/python3
-"""12-model_state_update_id_2
-Changes the name of a State object from the database hbtn_0e_6_usa
+"""0x0F. Python - Object-relational mapping - task 12. Update a state
 """
 
-if __name__ == "__main__":
-    from sys import argv
+if __name__ == '__main__':
+    from sys import argv, exit
     from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from model_state import State, Base
+    from sqlalchemy.orm import Session
+    from model_state import Base, State
 
-    engine = create_engine("mysql+mysqldb://{}:{}@localhost/{}".format(argv[1],
-                           argv[2], argv[3]), pool_pre_ping=True)
-    Base.metadata.create_all(engine)
+    if len(argv) != 4:
+        exit('Use: 12-model_state_update_id_2.py <mysql username> '
+             '<mysql password> <database name> ')
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    engine = create_engine('mysql+mysqldb://{}:{}@localhost:3306/'
+                           '{}'.format(argv[1], argv[2], argv[3]),
+                           pool_pre_ping=True)
+    session = Session(engine)
+    Base.metadata.create_all(engine)  # creates decprecated warning
 
-    for state in session.query(State).filter_by(id=2):
-        state.name = "New Mexico"
+    state_2 = session.query(State).filter_by(id=2).first()
+    if state_2 is not None:
+        state_2.name = 'New Mexico'
     session.commit()
     session.close()

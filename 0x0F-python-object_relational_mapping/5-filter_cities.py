@@ -1,20 +1,22 @@
 #!/usr/bin/python3
-"""5-filter_cities
-Takes in the name of a state as an argument and lists all cities of that state,
-using the database hbtn_0e_4_usa
-"""
+"""0x0F. Python - Object-relational mapping - task 5. All cities by state"""
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    import sys
     import MySQLdb
-    from sys import argv
 
-    with MySQLdb.connect(host="localhost", user=argv[1], passwd=argv[2],
-                         db=argv[3], port=3306) as db:
-        db.execute("SELECT cities.name\
-                    FROM cities\
-                    LEFT JOIN states\
-                    ON cities.state_id=states.id\
-                    WHERE states.name = %s\
-                    ORDER by cities.id ASC", (argv[4],))
-        table = db.fetchall()
-        print(", ".join([data[0] for data in table]))
+    if len(sys.argv) != 5:
+        sys.exit('Use: 5-filter_cities.py <mysql username> <mysql password>'
+                 ' <database name> <state name>')
+
+    conn = MySQLdb.connect(host='localhost', port=3306, user=sys.argv[1],
+                           passwd=sys.argv[2], db=sys.argv[3], charset='utf8')
+    cur = conn.cursor()
+    cur.execute("SELECT cities.name FROM cities LEFT JOIN states "
+                "ON cities.state_id = states.id WHERE states.name = %s "
+                "ORDER BY cities.id ASC", (sys.argv[4], ))
+    query_rows = cur.fetchall()
+    cities = [row[0] for row in query_rows]
+    print(', '.join(cities))
+    cur.close()
+    conn.close()

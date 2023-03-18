@@ -1,13 +1,13 @@
 #!/usr/bin/python3
-"""0x0F. Python - Object-relational mapping - task 14. Cities in state
+"""0x0F. Python - Object-relational mapping - task 15. City relationship
 """
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.schema import ForeignKey
-from model_state import Base
+from relationship_state import Base
 
 
 class City(Base):
-    """Defines ORM class for table `cities`, with 2 columns:
+    """Defines ORM class for table `cities`, with 3 columns:
 
        `id` (Column): unique identifier, primary key
        `name` (Column): name of city

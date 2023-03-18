@@ -1,23 +1,26 @@
 #!/usr/bin/python3
-"""11-model_state_insert
-Adds the State object “Louisiana” to the database hbtn_0e_6_usa
+"""0x0F. Python - Object-relational mapping - task 11. Add a new state
 """
 
-if __name__ == "__main__":
-    from sys import argv
+if __name__ == '__main__':
+    from sys import argv, exit
     from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from model_state import State, Base
+    from sqlalchemy.orm import Session
+    from model_state import Base, State
 
-    engine = create_engine("mysql+mysqldb://{}:{}@localhost/{}".format(argv[1],
-                           argv[2], argv[3]), pool_pre_ping=True)
-    Base.metadata.create_all(engine)
+    if len(argv) != 4:
+        exit('Use: 11-model_state_insert.py <mysql username> '
+             '<mysql password> <database name> ')
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    session.add(State(name="Louisiana"))
+    engine = create_engine('mysql+mysqldb://{}:{}@localhost:3306/'
+                           '{}'.format(argv[1], argv[2], argv[3]),
+                           pool_pre_ping=True)
+    Base.metadata.create_all(engine)  # creates decprecated warning
+    session = Session(engine)
+
+    new_state = State(name='Louisiana')
+    session.add(new_state)  # 'pending', not added to db yet
     session.commit()
 
-    for data in session.query(State).filter_by(name="Louisiana"):
-        print(data.id)
+    print(new_state.id)
     session.close()
